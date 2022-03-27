@@ -1,41 +1,40 @@
-# TypeScript Next.js example
+# Example of sending an SPL token in a partially signed Solana transaction
 
-This is a really simple project that shows the usage of Next.js with TypeScript.
+This repo contains a trivial example of creating a transaction where one party sends SOL to the other, and receives an SPL token in response.
 
-## Deploy your own
+It includes a UI at `/` and an API at `/api/makeTransaction.ts`. The UI contains a Solana wallet connect button, and another button which calls the API and then sends the returned transaction to the connected wallet.
 
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=next-example) or preview live with [StackBlitz](https://stackblitz.com/github/vercel/next.js/tree/canary/examples/with-typescript)
+## Environment Variables
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/vercel/next.js/tree/canary/examples/with-typescript&project-name=with-typescript&repository-name=with-typescript)
+- `RECIPIENT_PRIVATE_KEY` is the private key of the Solana account that is to be paid SOL and is to send an SPL token in return
+- `TOKEN_ADDRESS` is the address of the SPL token that is to be sent. The recipient must own this token or the transactions will fail
 
-## How to use it?
-
-Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) with [npm](https://docs.npmjs.com/cli/init) or [Yarn](https://yarnpkg.com/lang/en/docs/cli/create/) to bootstrap the example:
-
-```bash
-npx create-next-app --example with-typescript with-typescript-app
-# or
-yarn create next-app --example with-typescript with-typescript-app
-```
-
-Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=next-example) ([Documentation](https://nextjs.org/docs/deployment)).
-
-## Notes
-
-This example shows how to integrate the TypeScript type system into Next.js. Since TypeScript is supported out of the box with Next.js, all we have to do is to install TypeScript.
+The API takes as input a JSON body:
 
 ```
-npm install --save-dev typescript
+{
+  "account": "some public key"
+}
+
+And returns a base64 serialized transaction:
+
 ```
 
-To enable TypeScript's features, we install the type declarations for React and Node.
+{
+"transaction":"AgAAAAAAAAAAAAAAAAAAAAAAAA..."
+}
 
-```
-npm install --save-dev @types/react @types/react-dom @types/node
-```
+The transaction includes 2 instructions:
 
-When we run `next dev` the next time, Next.js will start looking for any `.ts` or `.tsx` files in our project and builds it. It even automatically creates a `tsconfig.json` file for our project with the recommended settings.
+- Send 0.01 SOL from the browser connected account to the recipient
+- Send 1 token from the recipient to the browser connected account
 
-Next.js has built-in TypeScript declarations, so we'll get autocompletion for Next.js' modules straight away.
+The transaction is returned partially signed by the recipient account.
 
-A `type-check` script is also added to `package.json`, which runs TypeScript's `tsc` CLI in `noEmit` mode to run type-checking separately. You can then include this, for example, in your `test` scripts.
+The API fulfils the POST request in the specification for Solana Pay transaction requests
+
+## Wallet support
+
+- Currently Phantom does not support partially signed transactions
+- I've tested with Solflare which works correctly
+- Other wallet adapters can be added in `pages/_app.tsx`
