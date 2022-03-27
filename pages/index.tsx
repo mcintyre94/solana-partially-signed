@@ -1,15 +1,20 @@
-import Link from 'next/link'
-import Layout from '../components/Layout'
+import { useState } from "react";
 
-const IndexPage = () => (
-  <Layout title="Home | Next.js + TypeScript Example">
-    <h1>Hello Next.js 👋</h1>
-    <p>
-      <Link href="/about">
-        <a>About</a>
-      </Link>
-    </p>
-  </Layout>
-)
+export default function IndexPage() {
+  const [loading, setLoading] = useState(false)
 
-export default IndexPage
+  async function handleClick() {
+    setLoading(true)
+    const res = await fetch('/api/makeTransaction', { method: 'post' })
+    const data = await res.json()
+    console.log(data.transaction)
+    setLoading(false)
+  }
+
+  return (
+    <>
+      <button type="button" onClick={handleClick}>Create Transaction</button>
+      {loading && <p>Loading...</p>}
+    </>
+  )
+}
